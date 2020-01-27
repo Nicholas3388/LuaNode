@@ -29,7 +29,8 @@ Download the DOIT dev-board schematic [here](https://www.dropbox.com/s/jefwxxtuf
 
 ### How To Build LuaNode32
 * Download prebuild toolchain [Here](https://github.com/jmattsson/nodemcu-prebuilt-toolchains "toolchains"), you 
-  can also build the tools from source, follow the steps [Here](http://esp-idf.readthedocs.io/en/latest/linux-setup.html "How to build toolchain")
+  can also build the tools from source, follow the steps [Here](https://docs.espressif.com/projects/esp-idf/en/v2.1.1/get-started/index.html#setup-toolchain "Setup toolchain (esp-idf v2.1.1)")
+* Download the esp-idf framework ([official guide](https://docs.espressif.com/projects/esp-idf/en/v2.1.1/get-started/index.html#get-esp-idf)). However You will need to include the `-b v2.1.1` flag in the `git` command line to checkout the correct version (`git clone --recursive -b v2.1.1 https://github.com/espressif/esp-idf.git`)
 * Export build tools' directory by executing the following command on terminal,
   `export PATH=/your_path/toolchains/esp32/bin:$PATH`, where the `your_path` is the
   path the toolchains stored.
@@ -47,6 +48,13 @@ Programming with Lua is easy, some samples are as follow:
 file.open("myfile.lua", "w+");
 file.write("hello world");
 file.close();
+
+-- connect to wifi
+wifi.setmode(wifi.STATION);
+config = {}
+config.ssid = "MYSSID"
+config.pwd = "password"
+wifi.sta.config(config)
 
 -- read file from file system
 file.open("myfile.lua", "r");

@@ -31,34 +31,26 @@
  * @author Johny Mattsson <jmattsson@dius.com.au>
  */
 #include "ip_fmt.h"
-#include "lwip/sockets.h"
-#include "lwip/ip_addr.h"
-#include "lwip/ip4_addr.h"
+
 #include <stdio.h>
 
-void macstr (char *str, const uint8_t *mac)
+#include "lwip/ip4_addr.h"
+#include "lwip/ip_addr.h"
+#include "lwip/sockets.h"
+
+void macstr(char *str, const uint8_t *mac)
 {
-  sprintf (str, "%02x:%02x:%02x:%02x:%02x:%02x",
-    mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    sprintf(str, "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 }
 
-
-void ipstr (char *out, const ip_addr_t *ip)
+void ipstr(char *out, const ip_addr_t *ip)
 {
-  if (ip->type == IPADDR_TYPE_V4)
-    ip4str (out, &ip->u_addr.ip4);
-  else if (ip->type == IPADDR_TYPE_V6)
-    ip6str (out, &ip->u_addr.ip6);
+    if (ip->type == IPADDR_TYPE_V4)
+        ip4str(out, &ip->u_addr.ip4);
+    else if (ip->type == IPADDR_TYPE_V6)
+        ip6str(out, &ip->u_addr.ip6);
 }
 
+void ip4str(char *out, const ip4_addr_t *ip) { ip4addr_ntoa_r(ip, out, IP_STR_SZ); }
 
-void ip4str (char *out, const ip4_addr_t *ip)
-{
-  ip4addr_ntoa_r (ip, out, IP_STR_SZ);
-}
-
-
-void ip6str (char *out, const ip6_addr_t *ip)
-{
-  ip6addr_ntoa_r (ip, out, IP_STR_SZ);
-}
+void ip6str(char *out, const ip6_addr_t *ip) { ip6addr_ntoa_r(ip, out, IP_STR_SZ); }

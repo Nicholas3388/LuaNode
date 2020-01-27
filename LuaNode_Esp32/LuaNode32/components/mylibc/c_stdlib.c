@@ -3,19 +3,18 @@
 
 #ifdef LUA_CROSS_COMPILER
 
-#include <stdlib.h>
 #include <ctype.h>
+#include <stdlib.h>
 #include <string.h>
-#define TRUE  1
+#define TRUE 1
 #define FALSE 0
 
 #else
 
-#include "ctype.h"
-
 #include "c_stdlib.h"
-#include "c_types.h"
 #include "c_string.h"
+#include "c_types.h"
+#include "ctype.h"
 
 // const char *lua_init_value = "print(\"Hello world\")";
 const char *lua_init_value = "@init.lua";
@@ -33,8 +32,8 @@ const char *c_getenv(const char *__string)
     }
     return NULL;
 }
-// make sure there is enough memory before real malloc, otherwise malloc will panic and reset
-// void *c_malloc(size_t __size){
+// make sure there is enough memory before real malloc, otherwise malloc will
+// panic and reset void *c_malloc(size_t __size){
 //  if(__size>system_get_free_heap_size()){
 //      NODE_ERR("malloc: not enough memory\n");
 //      return NULL;
@@ -56,8 +55,6 @@ const char *c_getenv(const char *__string)
 //  // NODE_ERR("-free1: %d\n", system_get_free_heap_size());
 // }c_stdlib.s
 
-
-
 // int  c_rand(void){
 // }
 // void c_srand(unsigned int __seed){
@@ -69,56 +66,46 @@ const char *c_getenv(const char *__string)
 //#include <reent.h>
 //#include "mprec.h"
 #endif
-double powersOf10[] ICACHE_STORE_ATTR =   /* Table giving binary powers of 10.  Entry */
-{
-    10.,            /* is 10^2^i.  Used to convert decimal */
-    100.,           /* exponents into floating-point numbers. */
-    1.0e4,
-    1.0e8,
-    1.0e16,
-    1.0e32,
-    1.0e64,
-    1.0e128,
-    1.0e256
-};
+double powersOf10[] ICACHE_STORE_ATTR = /* Table giving binary powers of 10.
+                                           Entry */
+    {10.,                               /* is 10^2^i.  Used to convert decimal */
+     100.,                              /* exponents into floating-point numbers. */
+     1.0e4, 1.0e8, 1.0e16, 1.0e32, 1.0e64, 1.0e128, 1.0e256};
 
 double c_strtod(const char *string, char **endPtr)
 {
-    int maxExponent = 511;  /* Largest possible base 10 exponent.  Any
-                 * exponent larger than this will already
-                 * produce underflow or overflow, so there's
-                 * no need to worry about additional digits.
-                 */
+    int maxExponent = 511; /* Largest possible base 10 exponent.  Any
+                            * exponent larger than this will already
+                            * produce underflow or overflow, so there's
+                            * no need to worry about additional digits.
+                            */
 
     int sign, expSign = FALSE;
     double fraction, dblExp, *d;
     register const char *p;
     register int c;
-    int exp = 0;        /* Exponent read from "EX" field. */
-    int fracExp = 0;        /* Exponent that derives from the fractional
-                 * part.  Under normal circumstatnces, it is
-                 * the negative of the number of digits in F.
-                 * However, if I is very long, the last digits
-                 * of I get dropped (otherwise a long I with a
-                 * large negative exponent could cause an
-                 * unnecessary overflow on I alone).  In this
-                 * case, fracExp is incremented one for each
-                 * dropped digit. */
-    int mantSize;       /* Number of digits in mantissa. */
-    int decPt;          /* Number of mantissa digits BEFORE decimal
-                 * point. */
-    const char *pExp;       /* Temporarily holds location of exponent
-                 * in string. */
+    int exp = 0;      /* Exponent read from "EX" field. */
+    int fracExp = 0;  /* Exponent that derives from the fractional
+                       * part.  Under normal circumstatnces, it is
+                       * the negative of the number of digits in F.
+                       * However, if I is very long, the last digits
+                       * of I get dropped (otherwise a long I with a
+                       * large negative exponent could cause an
+                       * unnecessary overflow on I alone).  In this
+                       * case, fracExp is incremented one for each
+                       * dropped digit. */
+    int mantSize;     /* Number of digits in mantissa. */
+    int decPt;        /* Number of mantissa digits BEFORE decimal
+                       * point. */
+    const char *pExp; /* Temporarily holds location of exponent
+                       * in string. */
 
     /*
      * Strip off leading blanks and check for a sign.
      */
 
     p = string;
-    while (isspace((unsigned char)(*p)))
-    {
-        p += 1;
-    }
+    while (isspace((unsigned char)(*p))) { p += 1; }
     if (*p == '-')
     {
         sign = TRUE;
@@ -139,7 +126,7 @@ double c_strtod(const char *string, char **endPtr)
      */
 
     decPt = -1;
-    for (mantSize = 0; ; mantSize += 1)
+    for (mantSize = 0;; mantSize += 1)
     {
         c = *p;
         if (!isdigit(c))
@@ -160,7 +147,7 @@ double c_strtod(const char *string, char **endPtr)
      * they can't affect the value anyway.
      */
 
-    pExp  = p;
+    pExp = p;
     p -= mantSize;
     if (decPt < 0)
     {
@@ -168,7 +155,7 @@ double c_strtod(const char *string, char **endPtr)
     }
     else
     {
-        mantSize -= 1;          /* One of the digits was the point. */
+        mantSize -= 1; /* One of the digits was the point. */
     }
     if (mantSize > 18)
     {
@@ -189,7 +176,7 @@ double c_strtod(const char *string, char **endPtr)
     {
         int frac1, frac2;
         frac1 = 0;
-        for ( ; mantSize > 9; mantSize -= 1)
+        for (; mantSize > 9; mantSize -= 1)
         {
             c = *p;
             p += 1;
@@ -297,7 +284,7 @@ double c_strtod(const char *string, char **endPtr)
 done:
     if (endPtr != NULL)
     {
-        *endPtr = (char *) p;
+        *endPtr = (char *)p;
     }
 
     if (sign)

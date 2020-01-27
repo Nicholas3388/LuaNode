@@ -31,84 +31,79 @@
  * @author Johny Mattsson <jmattsson@dius.com.au>
  */
 
-#include "platform.h"
 #include "platform_partition.h"
 
-#include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "platform.h"
 //#include "../../bootloader/src/main/bootloader_config.h"
-#include "esp_spi_flash.h"
 #include "esp_flash_data_types.h"
+#include "esp_spi_flash.h"
 
-#define partition_info_t	esp_partition_info_t
-#define PARTITION_MAGIC		ESP_PARTITION_MAGIC
-#define PARTITION_ADD		ESP_PARTITION_TABLE_ADDR
+#define partition_info_t esp_partition_info_t
+#define PARTITION_MAGIC ESP_PARTITION_MAGIC
+#define PARTITION_ADD ESP_PARTITION_TABLE_ADDR
 
-static inline bool possible_idx (uint8_t idx)
+static inline bool possible_idx(uint8_t idx) { return ((idx + 1) * sizeof(partition_info_t)) < SPI_FLASH_SEC_SIZE; }
+
+bool platform_partition_info(uint8_t idx, platform_partition_t *info)
 {
-  return ((idx +1) * sizeof (partition_info_t)) < SPI_FLASH_SEC_SIZE;
+    if (!possible_idx(idx))
+        return false;
+
+    partition_info_t pi;
+    esp_err_t err = spi_flash_read(PARTITION_ADD + idx * sizeof(pi), (uint32_t *)&pi, sizeof(pi));
+    if (err != ESP_OK)
+    {
+        return false;
+    }
+
+    if (pi.magic != PARTITION_MAGIC)
+    {
+        return false;
+    }
+
+    memcpy(info->label, pi.label, sizeof(info->label));
+    info->offs = pi.pos.offset;
+    info->size = pi.pos.size;
+    info->type = pi.type;
+    info->subtype = pi.subtype;
+    return true;
 }
 
-
-bool platform_partition_info (uint8_t idx, platform_partition_t *info)
+bool platform_partition_add(const platform_partition_t *info)
 {
-  if (!possible_idx (idx))
-    return false;
+    partition_info_t *part_table = (partition_info_t *)malloc(SPI_FLASH_SEC_SIZE);
+    if (!part_table)
+        return false;
+    esp_err_t err = spi_flash_read(PARTITION_ADD, (uint32_t *)part_table, SPI_FLASH_SEC_SIZE);
+    if (err != ESP_OK)
+        goto out;
 
-  partition_info_t pi;
-  esp_err_t err = spi_flash_read (
-    PARTITION_ADD + idx * sizeof(pi), (uint32_t *)&pi, sizeof (pi));
-  if (err != ESP_OK) {
-    return false;
-  }
+    uint8_t idx = 0;
+    for (; possible_idx(idx); ++idx)
+        if (part_table[idx].magic != PARTITION_MAGIC)
+            break;
 
-  if (pi.magic != PARTITION_MAGIC) {
-    return false;
-  }
-
-  memcpy (info->label, pi.label, sizeof (info->label));
-  info->offs = pi.pos.offset;
-  info->size = pi.pos.size;
-  info->type = pi.type;
-  info->subtype = pi.subtype;
-  return true;
-}
-
-
-bool platform_partition_add (const platform_partition_t *info)
-{
-  partition_info_t *part_table = (partition_info_t *)malloc(SPI_FLASH_SEC_SIZE);
-  if (!part_table)
-    return false;
-  esp_err_t err =
-    spi_flash_read (PARTITION_ADD, (uint32_t *)part_table, SPI_FLASH_SEC_SIZE);
-  if (err != ESP_OK)
-    goto out;
-
-  uint8_t idx = 0;
-  for (; possible_idx (idx); ++idx)
-    if (part_table[idx].magic != PARTITION_MAGIC)
-      break;
-
-  if (possible_idx (idx))
-  {
-    partition_info_t *slot = &part_table[idx];
-    slot->magic = PARTITION_MAGIC;
-    slot->type = info->type;
-    slot->subtype = info->subtype;
-    slot->pos.offset = info->offs;
-    slot->pos.size = info->size;
-    memcpy (slot->label, info->label, sizeof (slot->label));
-    //memset (slot->reserved, 0xff, sizeof (slot->reserved));
-	slot->flags = 0xffffffff;
-    err = spi_flash_erase_sector (PARTITION_ADD / SPI_FLASH_SEC_SIZE);
-    if (err == ESP_OK)
-      err = spi_flash_write (
-        PARTITION_ADD, (uint32_t *)part_table, SPI_FLASH_SEC_SIZE);
-  }
+    if (possible_idx(idx))
+    {
+        partition_info_t *slot = &part_table[idx];
+        slot->magic = PARTITION_MAGIC;
+        slot->type = info->type;
+        slot->subtype = info->subtype;
+        slot->pos.offset = info->offs;
+        slot->pos.size = info->size;
+        memcpy(slot->label, info->label, sizeof(slot->label));
+        // memset (slot->reserved, 0xff, sizeof (slot->reserved));
+        slot->flags = 0xffffffff;
+        err = spi_flash_erase_sector(PARTITION_ADD / SPI_FLASH_SEC_SIZE);
+        if (err == ESP_OK)
+            err = spi_flash_write(PARTITION_ADD, (uint32_t *)part_table, SPI_FLASH_SEC_SIZE);
+    }
 
 out:
-  free (part_table);
-  return err == ESP_OK;
+    free(part_table);
+    return err == ESP_OK;
 }

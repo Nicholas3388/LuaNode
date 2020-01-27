@@ -7,13 +7,11 @@
  *
  * Modification history:
  *     2014/3/12, v1.0 create this file.
-*******************************************************************************/
+ *******************************************************************************/
 #include "rom/ets_sys.h"
 //#include "osapi.h"
-#include "mygpio.h"
-
 #include "i2c_master.h"
-
+#include "mygpio.h"
 #include "pin_map.h"
 
 LOCAL uint8 m_nLastSDA;
@@ -29,22 +27,28 @@ LOCAL uint8 pinSCL = 15;
  * Parameters   : uint8 SDA
  *                uint8 SCL
  * Returns      : NONE
-*******************************************************************************/
-LOCAL void 
-i2c_master_setDC(uint8 SDA, uint8 SCL)
+ *******************************************************************************/
+LOCAL void i2c_master_setDC(uint8 SDA, uint8 SCL)
 {
-    SDA	&= 0x01;
-    SCL	&= 0x01;
+    SDA &= 0x01;
+    SCL &= 0x01;
     m_nLastSDA = SDA;
     m_nLastSCL = SCL;
 
-    if ((0 == SDA) && (0 == SCL)) {
+    if ((0 == SDA) && (0 == SCL))
+    {
         I2C_MASTER_SDA_LOW_SCL_LOW();
-    } else if ((0 == SDA) && (1 == SCL)) {
+    }
+    else if ((0 == SDA) && (1 == SCL))
+    {
         I2C_MASTER_SDA_LOW_SCL_HIGH();
-    } else if ((1 == SDA) && (0 == SCL)) {
+    }
+    else if ((1 == SDA) && (0 == SCL))
+    {
         I2C_MASTER_SDA_HIGH_SCL_LOW();
-    } else {
+    }
+    else
+    {
         I2C_MASTER_SDA_HIGH_SCL_HIGH();
     }
 }
@@ -55,9 +59,8 @@ i2c_master_setDC(uint8 SDA, uint8 SCL)
  *                    get i2c SDA bit value
  * Parameters   : NONE
  * Returns      : uint8 - SDA bit value
-*******************************************************************************/
-LOCAL uint8 
-i2c_master_getDC(void)
+ *******************************************************************************/
+LOCAL uint8 i2c_master_getDC(void)
 {
     uint8 sda_out;
     sda_out = GPIO_INPUT_GET(GPIO_ID_PIN(I2C_MASTER_SDA_GPIO));
@@ -69,7 +72,7 @@ i2c_master_getDC(void)
  * Description  : initilize I2C bus to enable i2c operations
  * Parameters   : NONE
  * Returns      : NONE
-*******************************************************************************/
+ *******************************************************************************/
 #if 0
 void 
 i2c_master_init(void)
@@ -99,13 +102,9 @@ i2c_master_init(void)
 }
 #endif
 
-uint8 i2c_master_get_pinSDA(){
-    return pinSDA;
-}
+uint8 i2c_master_get_pinSDA() { return pinSDA; }
 
-uint8 i2c_master_get_pinSCL(){
-    return pinSCL;
-}
+uint8 i2c_master_get_pinSCL() { return pinSCL; }
 
 /******************************************************************************
  * FunctionName : i2c_master_gpio_init
@@ -113,7 +112,7 @@ uint8 i2c_master_get_pinSCL(){
  *                mux and gpio num defined in i2c_master.h
  * Parameters   : NONE
  * Returns      : NONE
-*******************************************************************************/
+ *******************************************************************************/
 #if 0
 void 
 i2c_master_gpio_init(uint8 sda, uint8 scl)
@@ -146,7 +145,7 @@ i2c_master_gpio_init(uint8 sda, uint8 scl)
  * Description  : set i2c to send state
  * Parameters   : NONE
  * Returns      : NONE
-*******************************************************************************/
+ *******************************************************************************/
 #if 0
 void 
 i2c_master_start(void)
@@ -184,7 +183,7 @@ i2c_master_stop(void)
  * Description  : set ack to i2c bus as level value
  * Parameters   : uint8 level - 0 or 1
  * Returns      : NONE
-*******************************************************************************/
+ *******************************************************************************/
 #if 0
 void 
 i2c_master_setAck(uint8 level)
@@ -228,50 +227,44 @@ i2c_master_getAck(void)
 #endif
 
 /******************************************************************************
-* FunctionName : i2c_master_checkAck
-* Description  : get dev response
-* Parameters   : NONE
-* Returns      : true : get ack ; false : get nack
-*******************************************************************************/
-bool 
-i2c_master_checkAck(void)
+ * FunctionName : i2c_master_checkAck
+ * Description  : get dev response
+ * Parameters   : NONE
+ * Returns      : true : get ack ; false : get nack
+ *******************************************************************************/
+bool i2c_master_checkAck(void)
 {
-    if(i2c_master_getAck()){
+    if (i2c_master_getAck())
+    {
         return FALSE;
-    }else{
+    }
+    else
+    {
         return TRUE;
     }
 }
 
 /******************************************************************************
-* FunctionName : i2c_master_send_ack
-* Description  : response ack
-* Parameters   : NONE
-* Returns      : NONE
-*******************************************************************************/
-void 
-i2c_master_send_ack(void)
-{
-    i2c_master_setAck(0x0);
-}
+ * FunctionName : i2c_master_send_ack
+ * Description  : response ack
+ * Parameters   : NONE
+ * Returns      : NONE
+ *******************************************************************************/
+void i2c_master_send_ack(void) { i2c_master_setAck(0x0); }
 /******************************************************************************
-* FunctionName : i2c_master_send_nack
-* Description  : response nack
-* Parameters   : NONE
-* Returns      : NONE
-*******************************************************************************/
-void 
-i2c_master_send_nack(void)
-{
-    i2c_master_setAck(0x1);
-}
+ * FunctionName : i2c_master_send_nack
+ * Description  : response nack
+ * Parameters   : NONE
+ * Returns      : NONE
+ *******************************************************************************/
+void i2c_master_send_nack(void) { i2c_master_setAck(0x1); }
 
 /******************************************************************************
  * FunctionName : i2c_master_readByte
  * Description  : read Byte from i2c bus
  * Parameters   : NONE
  * Returns      : uint8 - readed value
-*******************************************************************************/
+ *******************************************************************************/
 #if 0
 uint8 
 i2c_master_readByte(void)

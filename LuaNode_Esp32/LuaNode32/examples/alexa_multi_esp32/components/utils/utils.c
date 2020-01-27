@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "utils.h"
+
 #include <stdio.h>
 
-#include "utils.h"
 #include "esp_log.h"
-
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -24,21 +24,18 @@ static const char *TAG = "utils";
 
 void printHex(char c)
 {
-	char buff[3] = {0x0};
-	sprintf(buff, "%02X ", c);
-	ESP_LOGI(TAG, "%s", buff);
+    char buff[3] = {0x0};
+    sprintf(buff, "%02X ", c);
+    ESP_LOGI(TAG, "%s", buff);
 }
 
-void delay_ms(int ms)
-{
-	vTaskDelay(ms / portTICK_RATE_MS);
-}
+void delay_ms(int ms) { vTaskDelay(ms / portTICK_RATE_MS); }
 
 void ip_addr_to_num(unsigned char *res, ip_addr_t *addr)
 {
-	unsigned int ip = (addr->u_addr).ip4.addr;
-	res[0] = (unsigned char)(ip & 0xFF);
-	res[1] = (unsigned char)((ip >> 8) & 0xFF);
-	res[2] = (unsigned char)((ip >> 16) & 0xFF);
-	res[3] = (unsigned char)((ip >> 24) & 0xFF);
+    unsigned int ip = (addr->u_addr).ip4.addr;
+    res[0] = (unsigned char)(ip & 0xFF);
+    res[1] = (unsigned char)((ip >> 8) & 0xFF);
+    res[2] = (unsigned char)((ip >> 16) & 0xFF);
+    res[3] = (unsigned char)((ip >> 24) & 0xFF);
 }
